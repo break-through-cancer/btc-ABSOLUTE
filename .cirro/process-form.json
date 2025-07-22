@@ -1,0 +1,55 @@
+{
+    "form": {
+        "properties": {
+            "phase": {
+                "default": "1",
+                "description": "Select Phase I for initial Absolute run to calculate purity/ploidy solutions, or Phase II after having selected solution.",
+                "title": "",
+                "type": "string",
+                "enum": [
+                    "1",
+                    "2"
+                ]
+            },
+            "seg_path": {
+                "description": "Seg input for Phase I & II",
+                "title": "purity_ploidy_sheet",
+                "type": "string",
+                "pathType": "dataset",
+                "file": "**/*.capseg.txt"
+            },
+            "indel_path": {
+                "description": "Indel input for Phase I & II",
+                "title": "purity_ploidy_sheet",
+                "type": "string",
+                "pathType": "dataset",
+                "file": "**/*.indel"
+            },
+            "snp_path": {
+                "description": "SNP input for Phase I & II",
+                "title": "purity_ploidy_sheet",
+                "type": "string",
+                "pathType": "dataset",
+                "file": "**/*.snp"
+            },
+            "purity": {
+                "description": "Purity value for Phase II.",
+                "title": "purity",
+                "type": "number"
+            },
+            "ploidy": {
+                "description": "Ploidy value for Phase II.",
+                "title": "ploidy",
+                "type": "number"
+            },
+            "rdata_path": {
+                "description": "Phase I Rdata output for Phase II",
+                "title": "purity_ploidy_sheet",
+                "type": "string",
+                "pathType": "dataset",
+                "file": "**/*.PP-modes.data.RData"
+            }
+        }
+    },
+    "ui": {}
+}
