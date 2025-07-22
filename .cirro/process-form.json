@@ -13,21 +13,21 @@
             },
             "seg_path": {
                 "description": "Seg input for Phase I & II",
-                "title": "purity_ploidy_sheet",
+                "title": "seg_path",
                 "type": "string",
                 "pathType": "dataset",
                 "file": "**/*.capseg.txt"
             },
             "indel_path": {
                 "description": "Indel input for Phase I & II",
-                "title": "purity_ploidy_sheet",
+                "title": "indel_path",
                 "type": "string",
                 "pathType": "dataset",
                 "file": "**/*.indel"
             },
             "snp_path": {
                 "description": "SNP input for Phase I & II",
-                "title": "purity_ploidy_sheet",
+                "title": "snp_path",
                 "type": "string",
                 "pathType": "dataset",
                 "file": "**/*.snp"
@@ -44,7 +44,7 @@
             },
             "rdata_path": {
                 "description": "Phase I Rdata output for Phase II",
-                "title": "purity_ploidy_sheet",
+                "title": "rdata_path",
                 "type": "string",
                 "pathType": "dataset",
                 "file": "**/*.PP-modes.data.RData"
