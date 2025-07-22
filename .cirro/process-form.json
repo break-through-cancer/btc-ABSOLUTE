@@ -51,5 +51,9 @@
             }
         }
     },
-    "ui": {}
+    "ui": {
+        "phase": {
+            "ui:widget": "radio"
+        }
+    }
 }
