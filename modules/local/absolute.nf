@@ -1,5 +1,5 @@
 process ABSOLUTE_RUN_I {
-    container "ghcr.io/btc-absolute:latest"
+    container "ghcr.io/break-through-cancer/btc-absolute:latest"
 
     input:
     tuple val(sample),
@@ -32,7 +32,7 @@ process ABSOLUTE_RUN_I {
 }
 
 process ABSOLUTE_RUN_II {
-    container "ghcr.io/btc-absolute:latest"
+    container "ghcr.io/break-through-cancer/btc-absolute:latest"
 
     input:
     tuple val(sample),
@@ -69,7 +69,7 @@ process ABSOLUTE_RUN_II {
 }
 
 process ABSOLUTE_FORCECALL{
-    container "ghcr.io/btc-absolute:latest"
+    container "ghcr.io/break-through-cancer/btc-absolute:latest"
     // publishDir params.outdir
     input:
     tuple val(sample),

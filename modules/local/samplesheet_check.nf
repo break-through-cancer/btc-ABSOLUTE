@@ -1,7 +1,7 @@
 process SAMPLESHEET_CHECK {
     tag "${samplesheet}"
     label 'process_single'
-    container "ghcr.io/btc-absolute:latest"
+    container "ghcr.io/break-through-cancer/btc-absolute:latest"
 
     input:
     path samplesheet
