@@ -1,6 +1,7 @@
 process ABSOLUTE_RUN_I {
     container "ghcr.io/break-through-cancer/btc-absolute:latest"
     label 'process_medium'
+    label 'process_long'
 
     input:
     tuple val(sample),
@@ -34,7 +35,7 @@ process ABSOLUTE_RUN_I {
 
 process ABSOLUTE_RUN_II {
     container "ghcr.io/break-through-cancer/btc-absolute:latest"
-    label 'process_medium'
+    label 'process_low'
 
     input:
     tuple val(sample),
@@ -72,7 +73,7 @@ process ABSOLUTE_RUN_II {
 
 process ABSOLUTE_FORCECALL{
     container "ghcr.io/break-through-cancer/btc-absolute:latest"
-    label 'process_low'
+    label 'process_single'
 
     input:
     tuple val(sample),

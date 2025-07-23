@@ -33,12 +33,12 @@
                 "file": "**/*.snp"
             },
             "purity": {
-                "description": "Purity value for Phase II.",
+                "description": "Purity value (alpha) for Phase II.",
                 "title": "purity",
                 "type": "number"
             },
             "ploidy": {
-                "description": "Ploidy value for Phase II.",
+                "description": "Ploidy value (tau) for Phase II.",
                 "title": "ploidy",
                 "type": "number"
             },
