@@ -17,18 +17,41 @@ ds.logger.info(files.columns)
 ds.logger.info("Checking samplesheet parameter")
 ds.logger.info(ds.samplesheet)
 
-ds.add_param('sample', ds.samplesheet.iloc[0]['sample'])
+suffix_map = {
+    '.capseg.txt': 'seg_path',
+    '.indel': 'indel_path',
+    '.snp': 'snp_path',
+    '.PP-modes.data.RData': 'rdata_path'
+}
 
-param_list = ["sample","seg_path","indel_path","snp_path"]
+def map_path(filename):
+    for suffix, path_type in suffix_map.items():
+        if filename.endswith(suffix):
+            return path_type
+    return None
 
-samplesheet = pd.DataFrame([{k: ds.params.get(k) for k in param_list}])
+files['path_type'] = files['file'].apply(map_path)
+
+result = (
+    files.pivot(index='sample', columns='path_type', values='file')
+         .rename_axis(columns=None)
+         .reset_index()
+)
+samplesheet = pd.merge(ds.samplesheet, result, on='sample')
+
+param_list = ["sample", "seg_path", "indel_path", "snp_path"]
+samplesheet = samplesheet[[param_list]]
 samplesheet.to_csv('samplesheet.csv', index=False)
+
+ds.logger.info("Print resulting samplesheet:")
+ds.logger.info(ds.samplesheet)
+
 ds.add_param("samplesheet", "samplesheet.csv")
 
-keep_params = ['phase', 'samplesheet', 'outdir']
+# keep_params = ['phase', 'samplesheet', 'outdir']
 
-for key in list(ds.params.keys()):  # list() avoids modifying during iteration
-    if key not in keep_params:
-        ds.remove_param(key, force=True)
+# for key in list(ds.params.keys()):  # list() avoids modifying during iteration
+#     if key not in keep_params:
+#         ds.remove_param(key, force=True)
 
 ds.logger.info(ds.params)

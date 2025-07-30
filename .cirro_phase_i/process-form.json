@@ -1,28 +1,4 @@
 {
-    "form": {
-        "properties": {
-            "seg_path": {
-                "description": "Seg input for Phase I & II",
-                "title": "seg_path",
-                "type": "string",
-                "pathType": "dataset",
-                "file": "**/*.capseg.txt"
-            },
-            "indel_path": {
-                "description": "Indel input for Phase I & II",
-                "title": "indel_path",
-                "type": "string",
-                "pathType": "dataset",
-                "file": "**/*.indel"
-            },
-            "snp_path": {
-                "description": "SNP input for Phase I & II",
-                "title": "snp_path",
-                "type": "string",
-                "pathType": "dataset",
-                "file": "**/*.snp"
-            }
-        }
-    },
+    "form": {},
     "ui": {}
 }
