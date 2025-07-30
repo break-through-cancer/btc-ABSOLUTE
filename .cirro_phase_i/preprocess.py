@@ -39,22 +39,13 @@ result = (
 )
 samplesheet = pd.merge(ds.samplesheet, result, on='sample')
 
-ds.logger.info("Print merged samplesheet:")
-print(samplesheet)
+param_list = ["sample", "seg_path", "indel_path", "snp_path"]
+samplesheet = samplesheet[param_list]
 
-# param_list = ["sample", "seg_path", "indel_path", "snp_path"]
-# samplesheet = samplesheet[[param_list]]
+ds.logger.info("Print resulting samplesheet:")
+ds.logger.info(samplesheet)
+
 samplesheet.to_csv('samplesheet.csv', index=False)
-
-# ds.logger.info("Print resulting samplesheet:")
-# ds.logger.info(ds.samplesheet)
-
 ds.add_param("samplesheet", "samplesheet.csv")
-
-# keep_params = ['phase', 'samplesheet', 'outdir']
-
-# for key in list(ds.params.keys()):  # list() avoids modifying during iteration
-#     if key not in keep_params:
-#         ds.remove_param(key, force=True)
 
 ds.logger.info(ds.params)
