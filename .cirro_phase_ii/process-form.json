@@ -1,16 +1,6 @@
 {
     "form": {
         "properties": {
-            "phase": {
-                "default": "1",
-                "description": "Select Phase I for initial Absolute run to calculate purity/ploidy solutions, or Phase II after having selected solution.",
-                "title": "",
-                "type": "string",
-                "enum": [
-                    "1",
-                    "2"
-                ]
-            },
             "seg_path": {
                 "description": "Seg input for Phase I & II",
                 "title": "seg_path",
@@ -51,9 +41,5 @@
             }
         }
     },
-    "ui": {
-        "phase": {
-            "ui:widget": "radio"
-        }
-    }
+    "ui": {}
 }

@@ -1,0 +1,10 @@
+{
+    "phase": "1",
+    "seg_path": "$.params.dataset.paramJson.seg_path",
+    "indel_path": "$.params.dataset.paramJson.indel_path",
+    "snp_path": "$.params.dataset.paramJson.snp_path",
+    "purity": "$.params.dataset.paramJson.purity",
+    "ploidy": "$.params.dataset.paramJson.ploidy",
+    "rdata_path": "$.params.dataset.paramJson.rdata_path",
+    "outdir": "$.params.dataset.s3|/data/"
+}

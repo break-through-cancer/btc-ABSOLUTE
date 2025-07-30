@@ -1,5 +1,5 @@
 {
-    "phase": "$.params.dataset.paramJson.phase",
+    "phase": "2",
     "seg_path": "$.params.dataset.paramJson.seg_path",
     "indel_path": "$.params.dataset.paramJson.indel_path",
     "snp_path": "$.params.dataset.paramJson.snp_path",

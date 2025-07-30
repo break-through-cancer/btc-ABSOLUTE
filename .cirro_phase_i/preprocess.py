@@ -19,10 +19,7 @@ ds.logger.info(ds.samplesheet)
 
 ds.add_param('sample', ds.samplesheet.iloc[0]['sample'])
 
-if int(ds.params.get('phase')) == 1:
-    param_list = ["sample","seg_path","indel_path","snp_path"]
-else:
-    param_list = ["sample","seg_path","indel_path","snp_path", "purity", "ploidy", "rdata_path"]
+param_list = ["sample","seg_path","indel_path","snp_path"]
 
 samplesheet = pd.DataFrame([{k: ds.params.get(k) for k in param_list}])
 samplesheet.to_csv('samplesheet.csv', index=False)
