@@ -38,7 +38,7 @@ result = (
 )
 samplesheet = pd.merge(ds.samplesheet, result, on='sample')
 
-param_list = ["sample", "seg_path", "indel_path", "snp_path"]
+param_list = ["sample", "maf", "segfile", "processed_counts"]
 samplesheet = samplesheet[param_list]
 
 ds.logger.info("Print resulting samplesheet:")
