@@ -42,6 +42,7 @@ workflow INPUT_CHECK {
             }
             .set { sample_map }
     }
+
     emit:
     sample_map          //input to sample-level analysis
     // versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]

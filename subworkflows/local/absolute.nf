@@ -1,4 +1,4 @@
-include { ABSOLUTE_RUN_I; ABSOLUTE_FORCECALL; ABSOLUTE_RUN_II } from '../../modules/local/absolute.nf'
+include { ABSOLUTE_RUN_I; ABSOLUTE_FORCECALL; ABSOLUTE_RUN_II } from '../../modules/local/absolute'
 
 workflow PHASE_I {
     take:
