@@ -47,7 +47,7 @@ iconicc_to_capseg <- function(segfile,full_dt){
   full_dt <- full_dt[order(factor(CONTIG,levels = canonical_contigs),as.numeric(START))]
   full_dt <- rbindlist(mclapply(1:nrow(full_dt),assign_group,full_dt,segfile,seg.source='final',mc.cores = 7))
   full_dt[,tangent_b10 := (2^log2_tangent)]
-  alleliccapseg[,tau:=2*(seg.mean)]
+  alleliccapseg[,tau:=2*(2^seg.mean)]
   sd.tau <- aggregate(full_dt$tangent_b10,by=list(full_dt$final_segment),FUN = function(x){return (sd(x,na.rm=T))})
   sd.tau <- as.data.table(sd.tau)
   colnames(sd.tau) <- c('SegmentID','sigma.tau')
@@ -106,4 +106,5 @@ iconicc_to_capseg <- function(segfile,full_dt){
   write.table(alleliccapseg, file = paste0(id,'.capseg.txt'),sep = '\t',col.names = T,row.names = F,quote = F)
   return(alleliccapseg)
 }
+
 iconicc_to_capseg(iconicc_seg,processed_cts)
