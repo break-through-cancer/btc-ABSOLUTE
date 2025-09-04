@@ -18,10 +18,9 @@ ds.logger.info("Checking samplesheet parameter")
 ds.logger.info(ds.samplesheet)
 
 suffix_map = {
-    '.capseg.txt': 'seg_path',
-    '.indel': 'indel_path',
-    '.snp': 'snp_path',
-    '.PP-modes.data.RData': 'rdata_path'
+    '.maf': 'maf',
+    '.seg.txt': 'segfile',
+    '_processed_counts.txt': 'processed_counts'
 }
 
 def map_path(filename):
@@ -39,7 +38,7 @@ result = (
 )
 samplesheet = pd.merge(ds.samplesheet, result, on='sample')
 
-param_list = ["sample", "seg_path", "indel_path", "snp_path", "purity", "ploidy", "rdata_path"]
+param_list = ["sample", "maf", "segfile", "processed_counts"]
 samplesheet = samplesheet[param_list]
 
 ds.logger.info("Print resulting samplesheet:")

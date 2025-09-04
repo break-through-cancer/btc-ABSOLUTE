@@ -16,19 +16,32 @@ workflow INPUT_CHECK {
         .set { samplesheet_utf8 }
 
     // 2. Parse samplesheet
-    samplesheet_utf8
-        .splitCsv(header: true, sep: ',')
-        .map { row ->
-            def sample =  row.sample
-            def seg_path   = file(row.seg_path)
-            def indel_path = file(row.indel_path)
-            def snp_path   = file(row.snp_path)
-            def purity    = row.purity ? row.purity.toDouble() : null
-            def ploidy    = row.ploidy ? row.ploidy.toDouble() : null
-            def rdata_path = (row.rdata_path && row.rdata_path.trim()) ? file(row.rdata_path) : null
-            return [sample, seg_path, indel_path, snp_path, purity, ploidy, rdata_path]
-        }
-        .set { sample_map }
+    if (params.phase == 'preprocess') {
+        samplesheet_utf8
+            .splitCsv(header: true, sep: ',')
+            .map { row ->
+                def sample =  row.sample
+                def maf   = file(row.maf)
+                def segfile   = file(row.segfile)
+                def processed_counts   = file(row.processed_counts)
+                return [sample, maf, segfile, processed_counts]
+            }
+            .set { sample_map }
+    } else {
+        samplesheet_utf8
+            .splitCsv(header: true, sep: ',')
+            .map { row ->
+                def sample =  row.sample
+                def seg_path   = file(row.seg_path)
+                def indel_path = file(row.indel_path)
+                def snp_path   = file(row.snp_path)
+                def purity    = row.purity ? row.purity.toDouble() : null
+                def ploidy    = row.ploidy ? row.ploidy.toDouble() : null
+                def rdata_path = (row.rdata_path && row.rdata_path.trim()) ? file(row.rdata_path) : null
+                return [sample, seg_path, indel_path, snp_path, purity, ploidy, rdata_path]
+            }
+            .set { sample_map }
+    }
 
     emit:
     sample_map          //input to sample-level analysis

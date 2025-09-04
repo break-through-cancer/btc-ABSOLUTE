@@ -1,45 +1,4 @@
 {
-    "form": {
-        "properties": {
-            "seg_path": {
-                "description": "Seg input for Phase I & II",
-                "title": "seg_path",
-                "type": "string",
-                "pathType": "dataset",
-                "file": "**/*.capseg.txt"
-            },
-            "indel_path": {
-                "description": "Indel input for Phase I & II",
-                "title": "indel_path",
-                "type": "string",
-                "pathType": "dataset",
-                "file": "**/*.indel"
-            },
-            "snp_path": {
-                "description": "SNP input for Phase I & II",
-                "title": "snp_path",
-                "type": "string",
-                "pathType": "dataset",
-                "file": "**/*.snp"
-            },
-            "purity": {
-                "description": "Purity value (alpha) for Phase II.",
-                "title": "purity",
-                "type": "number"
-            },
-            "ploidy": {
-                "description": "Ploidy value (tau) for Phase II.",
-                "title": "ploidy",
-                "type": "number"
-            },
-            "rdata_path": {
-                "description": "Phase I Rdata output for Phase II",
-                "title": "rdata_path",
-                "type": "string",
-                "pathType": "dataset",
-                "file": "**/*.PP-modes.data.RData"
-            }
-        }
-    },
+    "form": {},
     "ui": {}
 }

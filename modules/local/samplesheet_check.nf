@@ -17,6 +17,7 @@ process SAMPLESHEET_CHECK {
     import sys
 
     REQUIRED_COLUMNS = {
+        'preprocess': ['sample', 'maf', 'segfile', 'processed_counts'],
         '1': ['sample', 'seg_path', 'indel_path', 'snp_path'],
         '2': ['sample', 'seg_path', 'indel_path', 'snp_path', 'purity', 'ploidy', 'rdata_path']
     }
