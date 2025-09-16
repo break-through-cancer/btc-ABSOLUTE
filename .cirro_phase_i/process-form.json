@@ -1,4 +1,13 @@
 {
-    "form": {},
+    "form": {
+        "type": "object",
+        "properties": {
+            "ssnv_skew": {
+                "title": "SSNV skew",
+                "type": "number",
+                "default": "0.99"
+            }
+        }
+    },
     "ui": {}
 }

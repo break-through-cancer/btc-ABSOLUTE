@@ -8,6 +8,7 @@ process ABSOLUTE_RUN_I {
         path(seg_data),
         path(indel_data),
         path(snp_data)
+    val ssnv_skew
 
     output:
     path "${sample}", emit: result_dir
@@ -20,7 +21,7 @@ process ABSOLUTE_RUN_I {
         --indelmaf_fn ${indel_data} \
         --sample_name ${sample} \
         --results_dir . \
-        --ssnv_skew 0.99 \
+        --ssnv_skew ${ssnv_skew} \
         --abs_lib_dir /xchip/tcga/Tools/absolute/releases/v1.5 \
 
     # Create a directory for this sample's results
@@ -44,6 +45,7 @@ process ABSOLUTE_RUN_II {
         path(snp_data),
         val(purity),
         val(ploidy)
+    val ssnv_skew
 
     output:
     path "${sample}", emit: result_dir
@@ -56,7 +58,7 @@ process ABSOLUTE_RUN_II {
         --indelmaf_fn ${indel_data} \
         --sample_name ${sample} \
         --results_dir . \
-        --ssnv_skew 0.99 \
+        --ssnv_skew ${ssnv_skew} \
         --abs_lib_dir /xchip/tcga/Tools/absolute/releases/v1.5 \
         --force_alpha ${purity} \
         --force_tau ${ploidy}

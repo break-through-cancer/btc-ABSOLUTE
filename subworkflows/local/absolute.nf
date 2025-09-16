@@ -12,7 +12,7 @@ workflow PHASE_I {
         .set { phase1_inputs }
 
     ABSOLUTE_RUN_I(
-        phase1_inputs
+        phase1_inputs, params.ssnv_skew
     )
 }
 
@@ -34,7 +34,7 @@ workflow PHASE_II {
         .set { forcecall_inputs }
 
     ABSOLUTE_RUN_II(
-        phase2_inputs
+        phase2_inputs, params.ssnv_skew
     )
 
     ABSOLUTE_FORCECALL(
