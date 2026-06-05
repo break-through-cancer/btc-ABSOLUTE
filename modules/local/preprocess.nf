@@ -39,23 +39,24 @@ process PREPROCESS_FUNCOTATOR {
 }
 
 process PREPROCESS_ICONICC {
-    container "wchukwu/r-docker:latest"
+    container "jchen1095/terra-absolute:latest"
     label 'process_low'
 
     input:
     tuple val(sample),
         path(segfile),
         path(processed_counts)
-    path (capseg_rscript)
 
     output:
     path "${sample}.capseg.txt", emit: seg_data
 
     script:
     """
-    Rscript '${capseg_rscript}' \
-        -s '${segfile}' \
-        -c '${processed_counts}' \
-        -i '${sample}'
+    set -euo pipefail
+
+    Rscript /opt/app/capseg_conv.R \\
+        --segfile '${segfile}' \\
+        --processed_cts '${processed_counts}' \\
+        --participant_id '${sample}'
     """
 }
