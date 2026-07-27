@@ -44,6 +44,8 @@ The inputs to ABSOLUTE Preprocess are a maf file and ICONICC processed_counts an
 The inputs to ABSOLUTE part 1 should be the output of ABSOLUTE Preprocess
 
 After running ABSOLUTE part 1, update the sample's purity and ploidy by navigating to Cirro Projects -> Samples -> clicking on the right sample name and updating the purity and ploidy fields
+<img width="1793" height="192" alt="Screenshot 2026-07-27 at 3 29 05 PM" src="https://github.com/user-attachments/assets/3cb95c9f-1042-4ba1-b49a-6aaa1ccc8a0a" />
+
 
 The inputs to ABSOLUTE part 2 should be the output of both ABSOLUTE Preprocess and ABSOLUTE part 1, as well as making sure you have updated the purity/ploidy for the sample
 
