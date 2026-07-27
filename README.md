@@ -25,3 +25,23 @@ sample,seg_path,indel_path,snp_path,purity,ploidy,rdata_path
 sample_1,*.capseg.txt,*.indel,*.snp,0.00,0.00,phase_1_outdir/*.PP-modes.data.RData
 sample_2,*.capseg.txt,*.indel,*.snp,0.00,0.00,phase_1_outdir*.PP-modes.data.RData
 ```
+
+# ABSOLUTE Cirro Use Instructions 
+To run ABSOLUTE, you need ICONICC outputs, specifically the processed_counts and seg.txt files. Moreover, in your ICONICC dataset there needs to be a samplesheet to link the files to the sample that is affiliated with it. 
+
+The samplesheet needs to be structured as follows: 
+
+sample,file
+DFCI3-S2-L1,GBM1.DFCI3.S2.L1.seg.txt
+DFCI3-S2-L1,GBM1.DFCI3.S2.L1_processed_counts.txt
+
+The sample name should also match up with the sample name of the data used to generate the .maf file from Funcotator or a similar component. This consistency in sample naming will help downstream components to connect files coordinating to the same sample. 
+
+The inputs to ABSOLUTE Preprocess are a maf file and ICONICC processed_counts and seg.txt files
+The inputs to ABSOLUTE part 1 should be the output of ABSOLUTE Preprocess
+After running ABSOLUTE part 1, update the sample's purity and ploidy by navigating to Cirro Projects -> Samples -> clicking on the right sample name and updating the purity and ploidy fields
+The inputs to ABSOLUTE part 2 should be the output of both ABSOLUTE Preprocess and ABSOLUTE part 1, as well as making sure you have updated the purity/ploidy for the sample
+
+When using the Cirro pipeline, you can choose datasets that contain the input files and, if the setup is correct, the samples that can be analyzed should appear.
+
+
