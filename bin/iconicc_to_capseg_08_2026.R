@@ -17,7 +17,7 @@ option_list <- list(
               help = "Path to processed allelic counts file"),
   make_option(c("-i", "--participant_id"), type = "character", default = NA,
               help = "Unique sample identiifer")
-  
+
 )
 
 opt_parser <- OptionParser(option_list = option_list)
@@ -67,34 +67,6 @@ assign_segment_id <- function(row_index, source_dt, segment_table, segment_sourc
 #'
 #' @return Data table in CAPSEG format with one row per segment.
 convert_iconicc_to_capseg <- function(segment_table, processed_data) {
-  estimate_minor_fraction_from_afmin <- function(afmin_values, trial_counts) {
-    # Peak-finding:
-    # 1) Keep only bins with valid AFMIN and usable SNP support.
-    # 2) Fit a weighted kernel density on AFMIN in [0, 0.5].
-    # 3) Return the AFMIN mode (x at max density) as the segment-level minor fraction.
-    valid_idx <- which(!is.na(afmin_values) & !is.na(trial_counts) & trial_counts > 0)
-
-    if (length(valid_idx) < 2) {
-      return(NA_real_)
-    }
-
-    # Weight by SNP support so bins with more evidence contribute more to the peak.
-    afmin_values <- afmin_values[valid_idx]
-    trial_counts <- as.numeric(trial_counts[valid_idx])
-    density_weights <- trial_counts / sum(trial_counts)
-
-    density_fit <- stats::density(
-      afmin_values,
-      weights = density_weights,
-      from = 0,
-      to = 0.5,
-      n = 1024,
-      cut = 0
-    )
-
-    density_fit$x[which.max(density_fit$y)]
-  }
-
   segment_table[, SegmentID := seq_len(nrow(segment_table))]
   cancer_allele_segments <- segment_table
 
@@ -109,7 +81,20 @@ convert_iconicc_to_capseg <- function(segment_table, processed_data) {
   ))
 
   processed_data[, copy_number_linear := (2^log2_tangent)]
-  cancer_allele_segments[, tau := 2 * (2^seg.mean)]
+
+  # tau = 2 * (copy ratio). seg.mean may be in log2 scale (diploid ~ 0, deletions negative) or
+  # in linear copy-ratio scale (diploid ~ 1, strictly positive). Older ICONICC output was linear;
+  # newer output is log2. Detect the scale and compute tau accordingly (a linear value fed to
+  # 2*2^seg.mean would blow up amplicons to astronomical tau).
+  seg_mean_vals <- cancer_allele_segments$seg.mean
+  seg_mean_is_log2 <- (min(seg_mean_vals, na.rm = TRUE) < -0.1) ||
+    (median(seg_mean_vals, na.rm = TRUE) < 0.5)
+  message("seg.mean scale detected: ", if (seg_mean_is_log2) "log2" else "linear")
+  if (seg_mean_is_log2) {
+    cancer_allele_segments[, tau := 2 * (2^seg.mean)]
+  } else {
+    cancer_allele_segments[, tau := 2 * seg.mean]
+  }
 
   copy_number_sd_by_segment <- aggregate(
     processed_data$copy_number_linear,
@@ -127,41 +112,67 @@ convert_iconicc_to_capseg <- function(segment_table, processed_data) {
   processed_data[, AF1 := ifelse(snp_count < 5, NA, AF1)]
   processed_data[, AF2 := ifelse(snp_count < 5, NA, AF2)]
 
-  # Segment-level f estimation via AFMIN peak-finding
-  # For each segment, collect AFMIN values from high-confidence bins.
-  # Use the AFMIN mean as a fallback for sparse segments.
-  # If enough bins are available, replace fallback with weighted KDE mode.
-  # Snap near-balanced values to exactly 0.5 to reduce numerical jitter.
-  min_bins_for_density <- 8
-  # threshold for rounding to balanced f
-  # balance_snap_tolerance <- 0.00
+  # Segment-level f estimation: noise-deconvolved minor-allele deviation + depth-aware balance snap.
+  #
+  # Per-bin AFMIN = min(AF1, AF2) is biased BELOW 0.5 even for genuinely balanced segments, because
+  # taking the per-bin minimum of two noisy ~0.5 fractions systematically selects the downward
+  # fluctuation. A mean/mode of AFMIN therefore never collapses balanced segments to 0.5.
+  #
+  # AF1 is the MEAN over `snp_count` het-SNP fractions (ICONICC AC_calc), so its sampling variance
+  # is sigma_i^2 = v / snp_count_i, where v is a per-sample per-SNP allelic overdispersion. For a
+  # bin, dev = 0.5 - AFMIN and E[dev^2] = (0.5 - f)^2 + sigma_i^2. Deconvolve:
+  #   (0.5 - f) = sqrt(max(0, mean(dev^2) - mean(sigma_i^2)))
+  # v is SELF-CALIBRATED from the data: for balanced bins snp_count*dev^2 ~ v, and real imbalance
+  # only inflates it, so a low quantile of snp_count*dev^2 isolates the balanced-noise floor.
+  # Balanced segment -> excess ~ 0 -> f = 0.5; real LOH -> recovers the true minor fraction;
+  # depth-aware via snp_count. A consistency test then snaps to f = 0.5 any
+  # segment whose per-bin excess deviation is not significantly positive across bins (see T_SNAP).
+  # Because AF2 = 1 - AF1 exactly, dev = 0.5 - AFMIN = |AF1 - 0.5|, so for a balanced bin
+  # snp_count * dev^2 ~ v * chi-square(1) (right-skewed). The q-quantile of that product equals
+  # v * qchisq(q, 1); dividing the observed quantile by qchisq(q, 1) recovers the scale v. Using the
+  # raw quantile (without this correction) severely underestimates v and under-collapses balanced
+  # segments. A quantile at/below the median keeps the estimate in the balanced-dominated region.
+  Q_FLOOR <- 0.5     # tunable: quantile used for the balanced-noise calibration (<=0.5 recommended)
+  T_SNAP  <- as.numeric(Sys.getenv("T_SNAP", "3"))
+                     # tunable: consistency-test threshold. Snap f -> 0.5 when the per-bin excess of
+                     # squared minor-deviation over the balanced-noise floor is NOT significantly
+                     # positive: t = mean(excess) / (sd(excess)/sqrt(n_bins)) < T_SNAP. Larger =>
+                     # snaps more segments to balanced. Replaces the old Z_SNAP/TOL magnitude floor,
+                     # which collapsed mild but real (low-purity) imbalance because it tested the
+                     # deviation's *size* rather than its *consistency* across bins.
+  hs <- processed_data[!is.na(AFMIN) & !is.na(snp_count) & snp_count > 0]
+  v_hat <- as.numeric(quantile(hs$snp_count * (0.5 - hs$AFMIN)^2, Q_FLOOR, na.rm = TRUE)) /
+    qchisq(Q_FLOOR, df = 1)
+  message(sprintf("self-calibrated per-SNP allelic variance v = %.5f (floor q = %.2f)", v_hat, Q_FLOOR))
+
   minor_af_stats <- processed_data[, {
-    # Per-segment AFMIN subset after earlier SNP-count filtering.
-    afmin_values <- AFMIN[!is.na(AFMIN)]
+    ok <- !is.na(AFMIN) & !is.na(snp_count) & snp_count > 0
+    afmin_values <- AFMIN[ok]
+    sc <- as.numeric(snp_count[ok])
+    n_bins <- length(afmin_values)
     bins_with_sufficient_snps <- sum(snp_count > 5, na.rm = TRUE)
 
-    afmin_mean <- if (length(afmin_values) > 0) mean(afmin_values, na.rm = TRUE) else NA_real_
-    afmin_sd <- if (length(afmin_values) > 1) sd(afmin_values, na.rm = TRUE) else NA_real_
-    # Fallback for short/sparse segments where density mode is unstable.
-    fitted_minor_fraction <- afmin_mean
+    afmin_mean <- if (n_bins > 0) mean(afmin_values) else NA_real_
+    afmin_sd   <- if (n_bins > 1) sd(afmin_values) else NA_real_
 
-    if (length(afmin_values) >= min_bins_for_density) {
-      # Rebuild aligned weights from SNP counts for the non-missing AFMIN bins.
-      trial_counts <- as.integer(round(snp_count[!is.na(AFMIN)]))
-      valid_idx <- which(!is.na(trial_counts) & trial_counts > 0L)
-      trial_counts <- trial_counts[valid_idx]
-      afmin_test_values <- afmin_values[valid_idx]
-
-      # Main estimator: AFMIN peak from weighted KDE.
-      fitted_minor_fraction <- estimate_minor_fraction_from_afmin(afmin_test_values, trial_counts)
+    if (n_bins < 2) {
+      f_value <- afmin_mean
+    } else {
+      dev2  <- (0.5 - afmin_values)^2       # per-bin squared deviation
+      sig2  <- v_hat / sc                   # per-bin AF variance (self-calibrated, depth-aware)
+      delta <- sqrt(max(0, mean(dev2) - mean(sig2)))   # noise-deconvolved minor deviation
+      excess <- dev2 - sig2                            # per-bin excess over the balanced-noise floor
+      # Snap on the CONSISTENCY of the excess across bins, not its magnitude. Under a genuinely
+      # balanced segment E[excess] = 0 with bin-to-bin scatter sd(excess); a real imbalance (even a
+      # mild, low-purity one) shifts every bin's excess positive, so mean(excess) sits many empirical
+      # SEs above 0. delta and the t-statistic are coupled (t ~ delta^2 * sqrt(n_bins) / sd(excess)),
+      # so a tiny deviation cannot score a large t: the statistic folds effect-size and consistency
+      # into one test, keeping a small-but-consistent shift (real LOH) while snapping a small-but-
+      # noisy one (min/max artifact) -- unlike the old absolute-magnitude TOL floor.
+      se_excess <- if (n_bins > 1) sd(excess) / sqrt(n_bins) else Inf
+      t_stat    <- if (se_excess > 0) mean(excess) / se_excess else 0
+      f_value   <- if (t_stat < T_SNAP) 0.5 else (0.5 - delta)
     }
-
-    f_value <- fitted_minor_fraction
-
-    # Snap near-balanced segments to exactly 0.5 to reduce numerical jitter.
-    # if (!is.na(f_value) && abs(f_value - 0.5) <= balance_snap_tolerance) {
-    #   f_value <- 0.5
-    # }
 
     list(
       allele_freq_min_mean = afmin_mean,
@@ -198,24 +209,23 @@ convert_iconicc_to_capseg <- function(segment_table, processed_data) {
   colnames(snp_count_by_segment) <- c("SegmentID", "n_hets")
   cancer_allele_segments <- merge(cancer_allele_segments, snp_count_by_segment, by = "SegmentID")
 
-  cancer_allele_segments[, loh_label := ifelse(
-    (tau >= 1.8 & tau <= 2.2) & allele_freq_min_mean <= 0.05,
-    0,
-    2
-  )]
-
+  # NOTE (2026-08): dropped the legacy SegLabelCNLOH column. ABSOLUTE never reads it (grep-confirmed across
+  # getzlab/ABSOLUTE v1.5; the allelic reader read.delim->AllelicMakeSegObj indexes seg cols BY NAME, with no
+  # presence-check and no column-count/positional assumption), and the canonical generators (getzlab/ASCAT-parser,
+  # aaronmck/CapSeg AllelicCapseg) both OMIT it. Our old 0/2 rule was also malformed vs the canonical 0/1
+  # (false/true CNLOH) spec and thresholded on the switch-biased raw AFMIN. Output now matches ascat-parser's acs.
   cancer_allele_segments[, length := loc.end - loc.start]
 
   capseg_output <- cancer_allele_segments[, c(
     "chrom", "loc.start", "loc.end", "num.mark", "length", "n_hets",
     "f", "tau", "copy_number_sd", "minor_copy_estimate", "minor_copy_sd",
-    "major_copy_estimate", "major_copy_sd", "loh_label"
+    "major_copy_estimate", "major_copy_sd"
   )]
 
   colnames(capseg_output) <- c(
     "Chromosome", "Start.bp", "End.bp", "n_probes", "length", "n_hets",
     "f", "tau", "sigma.tau", "mu.minor", "sigma.minor",
-    "mu.major", "sigma.major", "SegLabelCNLOH"
+    "mu.major", "sigma.major"
   )
 
   capseg_output[, Chromosome := gsub("chr", "", Chromosome)]
