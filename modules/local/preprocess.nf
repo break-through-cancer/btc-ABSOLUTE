@@ -26,6 +26,13 @@ process PREPROCESS_FUNCOTATOR {
     names(maf)[names(maf) == "End_Position"] <- "End_position"
     maf[['Chromosome']] <- gsub("^chr", "", maf[['Chromosome']])
 
+    set.seed(42)
+    max_variants <- 2000
+    if (nrow(maf) > max_variants) {
+      maf <- maf[sample(nrow(maf), max_variants), ]
+      message("Downsampled MAF to ", max_variants, " variants")
+    }
+
     snp_cols <- c('SNP', 'DNP', 'TNP', 'MNP')
     snp_maf <- maf[maf[['Variant_Type']] %in% snp_cols,]
     write.table(snp_maf,'${sample}.snp',sep = '\t',col.names = T,row.names = F,quote = F)
