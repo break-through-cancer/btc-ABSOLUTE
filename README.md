@@ -26,6 +26,9 @@ sample_1,*.capseg.txt,*.indel,*.snp,0.00,0.00,phase_1_outdir/*.PP-modes.data.RDa
 sample_2,*.capseg.txt,*.indel,*.snp,0.00,0.00,phase_1_outdir*.PP-modes.data.RData
 ```
 
+# Additional Documentation
+[ABSOLUTE Review Guide](https://docs.google.com/document/d/1vRH3NMc4YWmcXlvjzyM-vzqVt4uYZSSaEu-8amqe9wk)
+
 # ABSOLUTE Cirro Use Instructions 
 To run ABSOLUTE, you need ICONICC outputs, specifically the processed_counts and seg.txt files. Moreover, in your ICONICC dataset there needs to be a samplesheet to link the files to the sample that is affiliated with it. 
 
